@@ -27,8 +27,8 @@ int main() {
 	switch (user_choice) {
 		case 1: readAll();
 		case 2: selectEntry();
-		//case 3: addEntry();
-		//case 4: deleteEntry();
+		case 3: addEntry();
+		case 4: deleteEntry();
 		case 5: printf("Exiting program now\n"); exit(0);
 		default: printf("Invalid choice.\n");
 	}
@@ -76,6 +76,72 @@ void selectEntry() {
 	// Print message if none found and cloe file
 	if (!found) {
 		printf("No entry exists for that date.\n");
+		main();
 	}
 	fclose(fp);
+}
+
+// Function to add entry
+void addEntry() {
+	// Set variables for date and diary entry
+	char date[20];
+	char content[MAX_LINE];
+	// Get user date
+	printf("Enter date (YYYY-MM-DD): ");
+	scanf("%19s", date);
+	clearInputBuffer();
+	// Get user diary entry
+	printf("Enter your thoughts: ");
+	fgets(content, MAX_LINE, stdin);
+	// Remove the trailing newline that fgets automatically ads
+	content[strcspn(content, "\n")] = 0;
+	// Ad input to file
+	FILE *fp = fopen(FILENAME, "a");
+	if (fp) {
+		fprintf(fp, "\n%s: %s", date, content);
+		fclose(fp);
+		printf("Entry saved\n");
+		main();
+	}
+}
+
+// Function to delete entry
+void deleteEntry() {
+	// Get the date of the entry the user wants to delete
+	char date[20];
+	printf("Enter the date you wish to delete: ");
+	scanf("%19s", date);
+	// Pointers for source file and temporary storage file
+	FILE *fp = fopen(FILENAME, "r");
+	FILE *temp = fopen("temp.txt", "w");
+	// Check files can be accessed
+	if (!fp || !temp) {
+		printf("Error accessing files \n");
+		return;
+	}
+	// Copy every line except the one that we want to delete to the temp file
+	char buffer[MAX_LINE];
+	int deleted = 0;
+	while (fgets(buffer, MAX_LINE, fp)) {
+		if (strncmp(buffer, date, strlen(date)) != 0) {
+			fputs(buffer, temp);
+		} else {
+			deleted = 1;
+		}
+	}
+	// Close the files and delete the temp file
+	fclose(fp);
+	fclose(temp);
+	remove(FILENAME);
+	rename("temp.txt", FILENAME);
+	// Print success or error message
+	if (deleted) printf("Entry removed\n");
+	else printf("Entry not found\n");
+	main();
+}
+
+// Clears buffer
+void clearInputBuffer() {
+	int c;
+	while ((c = getchar()) != '\n' && EOF);
 }
