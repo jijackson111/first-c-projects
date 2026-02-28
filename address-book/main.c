@@ -9,6 +9,7 @@
 
 // Function prototypes
 void buildTable();
+void viewTable();
 
 // Define data structure for contact info
 typedef struct Contact {
@@ -35,7 +36,7 @@ unsigned int hash(char *key) {
 int main() {
     buildTable();
     printf("Hash table successfully created in memory\n");
-    viewAllContacts();
+    viewTable();
     return 0;
 }
 
@@ -44,6 +45,8 @@ void buildTable() {
     // Set file pointer and line buffer
     FILE *fp = fopen(FILENAME, "r");
     char line[MAX_LINE];
+    // Skip the header
+    if (fgets(line, sizeof(line), fp) == NULL) return;
     // Loop through
     while (fgets(line, sizeof(line), fp)) {
         line[strcspn(line, "\n")] = 0; // Remove trailing newline
@@ -68,4 +71,21 @@ void buildTable() {
     }
     }
     fclose(fp);
+}
+
+// Function to view all contacts in table
+void viewTable() {
+    printf("\n--------CONTACT BOOK---------\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        Contact *current = hashTable[i]; // Pointer to first 
+        if (current != NULL) { 
+            printf("Bucket [%d]:\n", i); // Print bucket if it is not empty
+            while (current != NULL) { 
+                printf("   -> Name: %s | Phone: %s | Email: %s | Postcode: %s\n", 
+                    current->name, current->phone, current->email, current->postcode); // Print contact info
+                current = current->next; // Chain to next element
+            }
+        }
+    }
+    printf("------------------------------\n");
 }
